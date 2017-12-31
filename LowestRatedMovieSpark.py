@@ -38,50 +38,50 @@ if __name__ == "__main__":
 	#Create Spark context sc
 	sc = SparkContext(conf = conf)
 
-#Load up our movie ID -> movie name lookup table
-#Its a dictionary called movieNames which has Movie IDs and Movie Names
-movieNames = loadMovieNames()
+	#Load up our movie ID -> movie name lookup table
+	#Its a dictionary called movieNames which has Movie IDs and Movie Names
+	movieNames = loadMovieNames()
 
-#Load up the raw u.data file
-#HDFS path
-#RDD called lines
-lines = sc.textFile("hdfs:///user/maria_dev/ml-100k/u.data")
+	#Load up the raw u.data file
+	#HDFS path
+	#RDD called lines
+	lines = sc.textFile("hdfs:///user/maria_dev/ml-100k/u.data")
 
-#Convert to (movieID, (rating, 1.0))
-#Create an RDD called movieRatings that contains a Key-Value pair
-#Key - Movie ID, Value : tupe of rating Value & "1"
-#Sum up all ratings & sum up all 1s to compute the average rating
-movieRatings = lines.map(parseInput)
+	#Convert to (movieID, (rating, 1.0))
+	#Create an RDD called movieRatings that contains a Key-Value pair
+	#Key - Movie ID, Value : tupe of rating Value & "1"
+	#Sum up all ratings & sum up all 1s to compute the average rating
+	movieRatings = lines.map(parseInput)
 
-#Reduce to (movieID, (sumOfRatings, totalRatings))
-#Sum up all ratings and 1s using lambda function
-#Reduce operation : pass 2 values.
-#For each unique key, you pass in pair of values that have to be combined in some way.
-#Here we add up, the rating and 1
-#movie1 & movie2 are variables of the function
-#Reduce By Key. So it combines only 'Values' for each unique 'Key' and no change made to the 'Key'
-#KEY: movieID; VALUE: (sumOfRatings, totalRatings)
-#movie1[0] & movie1[0] indicates ratings.
-#movie2[0] & movie2[0] indicates '1'
-ratingTotalsAndCount = movieRatings.reduceByKey(lambda movie1, movie2: ( movie1[0] + movie2[0], movie1[1] + movie2[1] ) )
+	#Reduce to (movieID, (sumOfRatings, totalRatings))
+	#Sum up all ratings and 1s using lambda function
+	#Reduce operation : pass 2 values.
+	#For each unique key, you pass in pair of values that have to be combined in some way.
+	#Here we add up, the rating and 1
+	#movie1 & movie2 are variables of the function
+	#Reduce By Key. So it combines only 'Values' for each unique 'Key' and no change made to the 'Key'
+	#KEY: movieID; VALUE: (sumOfRatings, totalRatings)
+	#movie1[0] & movie1[0] indicates ratings.
+	#movie2[0] & movie2[0] indicates '1'
+	ratingTotalsAndCount = movieRatings.reduceByKey(lambda movie1, movie2: ( movie1[0] + movie2[0], movie1[1] + movie2[1] ) )
 
-#Map to (movieID, averageRating)
-#mapValues: Transforms the 'Values' (Finds the avg by dividing the first part of Key by its 2nd part) 
-#Getting the average
-averageRatings = ratingTotalsAndCount.mapValues(lambda totalAndCount : totalAndCount[0] / totalAndCount[1])
+	#Map to (movieID, averageRating)
+	#mapValues: Transforms the 'Values' (Finds the avg by dividing the first part of Key by its 2nd part) 
+	#Getting the average
+	averageRatings = ratingTotalsAndCount.mapValues(lambda totalAndCount : totalAndCount[0] / totalAndCount[1])
 
-#Sort by average rating
-#Sort by the 2nd field : x[1]
-#Sorted (movieID, averageRating)
-sortedMovies = averageRatings.sortBy(lambda x: x[1])
+	#Sort by average rating
+	#Sort by the 2nd field : x[1]
+	#Sorted (movieID, averageRating)
+	sortedMovies = averageRatings.sortBy(lambda x: x[1])
 
-#Take the top 10 results
-#Top 10 (movieID, averageRating)
-results = sortedMovies.take(10)
+	#Take the top 10 results
+	#Top 10 (movieID, averageRating)
+	results = sortedMovies.take(10)
 
-#Print them out:
-for result in results:
-#Using the movieNames dictionary
-#movieNames[result[0]] -> gives Movie Title
-	#(MovieTitle, averageRating)
-	print(movieNames[result[0]], result[1])
+	#Print them out:
+	for result in results:
+	#Using the movieNames dictionary
+	#movieNames[result[0]] -> gives Movie Title
+		#(MovieTitle, averageRating)
+		print(movieNames[result[0]], result[1])
