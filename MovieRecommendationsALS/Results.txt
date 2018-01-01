@@ -1,0 +1,11 @@
+Ratings for user ID 0:
+Star Wars (1977) 5.0
+Empire Strikes Bck, The (1980) 5.0
+Gone with the Wind (1939) 1.0
+
+Top 5 recommendations:
+(u'Wrong Trousers, The (1993)', 5.74982166)
+(u'Fifth Element, The (1997)', 5.23465752)
+(u'Close Shave, A (1995)', 5.05069999)
+(u'Monty Python and the Holy Grail (1974)', 4.99646692)
+(u'Star Wars 1977', 4.983574469)
